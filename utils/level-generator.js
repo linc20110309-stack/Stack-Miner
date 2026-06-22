@@ -22,8 +22,8 @@ var LAYOUT_RING = 'ring';
 var LAYOUT_RANDOM = 'random';
 var DEFAULT_LAYOUT = LAYOUT_RANDOM;
 
-var CELL_SIZE = 72;
-var H_GAP = 6;
+var CELL_SIZE = 92;
+var H_GAP = 4;
 var LAYER_STEP_Y = CELL_SIZE * 0.4;
 
 var MAIN_CX = constants.LOGICAL_WIDTH / 2;
@@ -33,8 +33,8 @@ var MAIN_CX = constants.LOGICAL_WIDTH / 2;
 //   可用区域: ~140 (NavBar 下) → ~960 (PILE_Y 牌堆顶) = 820px
 //   中心: 140 + 820/2 = 550 → 取 540 (预留 10px 上下间距)
 //   牌堆 980 + 重玩按钮底部 1320 仍保持 ≥ 60px 间距
-var MAIN_CY = 540;
-var PILE_Y = 980;
+var MAIN_CY = 520;
+var PILE_Y = 900;
 // OPT-牌堆方向:顶牌向中心摆放,edges 向屏幕外侧延伸
 // LEFT_PILE_X / RIGHT_PILE_X 为顶牌 x(其他牌牌堆 x 均由 _generatePile 设为该值)
 var LEFT_PILE_X = 230;
@@ -213,12 +213,12 @@ function _paramsFor(level) {
           types: 9, pileCountEach: 8, shufflePile: true, pileMixRatio: 0.00 },
 
         // ===== L8(索引 7)多种类 10,强制分散 minDist=6 span=3=====
-        { layers: 4, layerRows: [3, 5, 6, 7], cols: 7, layerStepY: 22,
+        { layers: 4, layerRows: [3, 5, 6, 7], cols: 7, layerStepY: 18,
           sameTypeMinDist: 6, sameTypeLayerSpan: 3,
           types: 10, pileCountEach: 8, shufflePile: true, pileMixRatio: 0.00 },
 
         // ===== L9(索引 8)大量种类 12,同类强分散 minDist=7 span=4=====
-        { layers: 5, layerRows: [3, 4, 5, 6, 7], cols: 7, layerStepY: 20,
+        { layers: 5, layerRows: [3, 4, 5, 6, 7], cols: 7, layerStepY: 16,
           sameTypeMinDist: 7, sameTypeLayerSpan: 4,
           types: 12, pileCountEach: 9, shufflePile: true, pileMixRatio: 0.00 }
     ];
