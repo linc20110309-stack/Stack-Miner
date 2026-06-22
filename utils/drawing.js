@@ -5,6 +5,10 @@
  * **变更说明**(对标参考图):
  *   - 新增 drawMahjongIcon:黑白线条麻將图案绘制函数
  *   - 全部 15 种宝物图案使用纯黑色线条/填充,移除彩色 emoji
+ *
+ * **变更说明**(UI 优化提示词 V2):
+ *   - 新增 drawTextStroke: 带描边文本(顶部信息区数字用,提升辨识度)
+ *   - 新增 drawCardLayered: 按 layer 透明度绘制卡片(规范 §7.3)
  */
 var constants = require('./constants.js');
 
@@ -101,6 +105,52 @@ function drawText(ctx, text, x, y, color, font, align) {
     ctx.textBaseline = 'middle';
     ctx.fillText(String(text), x, y);
     ctx.restore();
+}
+
+/**
+ * **新增**: 绘制带描边文本(规范:数字 1px 描边提升辨识度)
+ *  - 先绘制描边(stroke),再绘制填充(fill)
+ *  - strokeColor 默认白色,2px 线宽
+ *  - 用于顶部信息区数字等需要突出显示的场景
+ * @param {Object} ctx
+ * @param {string} text
+ * @param {number} x
+ * @param {number} y
+ * @param {string} color 填充色
+ * @param {string} font
+ * @param {string} strokeColor 描边色
+ * @param {number} lineWidth 描边宽度
+ * @param {string} align
+ */
+function drawTextStroke(ctx, text, x, y, color, font, strokeColor, lineWidth, align) {
+    ctx.save();
+    ctx.font = font || '24px sans-serif';
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    if (strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = lineWidth || 2;
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.strokeText(String(text), x, y);
+    }
+    ctx.fillStyle = color;
+    ctx.fillText(String(text), x, y);
+    ctx.restore();
+}
+
+/**
+ * **新增**: 按 layer 透明度绘制卡片(规范 GAME_DESIGN §7.3)
+ *  - Layer 1 = 100% alpha,Layer 2 = 85%,Layer 3 = 70%,Layer 4 = 55%
+ *  - 用于层级透明度规则,替代旧的 clickable/非clickable 二分法
+ * @param {Object} ctx
+ * @param {number} layer 1-based layer
+ * @returns {number} 该层对应的 alpha 值
+ */
+function getLayerAlpha(layer) {
+    var key = layer;
+    if (key > 4) key = 4;
+    return constants.LAYER_ALPHA[key];
 }
 
 /**
@@ -429,6 +479,8 @@ module.exports = {
     drawEmoji: drawEmoji,
     drawMahjongIcon: drawMahjongIcon,
     drawText: drawText,
+    drawTextStroke: drawTextStroke,
+    getLayerAlpha: getLayerAlpha,
     hitTest: hitTest,
     hitTestCircle: hitTestCircle
 };

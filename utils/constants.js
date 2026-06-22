@@ -5,20 +5,27 @@
  * - 仅允许基础常量、颜色、尺寸、动画时长;不允许业务逻辑
  *
  * **变更说明**(符合 UI_ART_STANDARDS V2.0 Final):
- *   - 配色改为寻宝金 + 治愈浅米色背景(原为深蓝 + 浅蓝)
+ *   - 配色改为寻宝金 + 治愈浅米色背景
  *   - 字号层级 40/28/22/18
  *   - 阴影色统一 rgba(0,0,0,0.15),offsetY 4, blur 8
  *   - 卡片 88x88,圆角 16
  *   - 背包高度 96,圆角 20
  *   - 顶部状态栏 90
- *   - 删去 daily 场景相关常量
  *   - 颜色变量集中到 COLORS,避免散落字符串
  *
- * **变更说明**(对标参考图):
- *   - 麻將卡牌:白底 + 细绿边 + 加厚底部立体阴影
- *   - 黑白线条图案统一(移除彩色 emoji)
- *   - 顶层 100% 实色 / 被压下层 0.45 alpha 发灰
- *   - 上层移除后下层自动恢复实色
+ * **变更说明**(UI 优化提示词 V2):
+ *   - 新增按钮规格常量:BUTTON_WIDTH/BUTTON_HEIGHT/ROUND_RADIUS
+ *   - 新增弹窗按钮间距 MODAL_BUTTON_GAP
+ *   - 新增背景纹理色 BG_TEXTURE
+ *   - 新增可点击高亮描边色 CLICKABLE_HIGHLIGHT(寻宝金)
+ *   - 新增不可点击降亮参数 DIM_ALPHA
+ *   - 新增层级透明度规则(layer→alpha)
+ *   - 新增缓动函数名(EASE_OUT_QUAD)
+ *   - 新增震屏时长 FAIL_SHAKE_MS
+ *   - 新增背包满闪烁间隔 BACKPACK_FLASH_MS
+ *   - 新增解锁反馈时长 UNLOCK_FLASH_MS
+ *   - 新增悬浮上浮量 HOVER_LIFT_PX
+ *   - 新增胜利/失败弹窗配色胜利绿/失败红
  */
 var constants = {
     // === 屏幕(逻辑分辨率)===
@@ -34,30 +41,35 @@ var constants = {
 
     // === 通用尺寸 ===
     NAV_HEIGHT: 90,                // 顶部信息区高度
-    BUTTON_HEIGHT: 56,
+    BUTTON_HEIGHT: 64,             // **变更**: 56→64(底部操作按钮规格)
+    BUTTON_WIDTH: 280,             // **新增**: 底部操作按钮宽度
+    BUTTON_RADIUS: 32,             // **新增**: 按钮圆角(规范)
+    BUTTON_GAP: 20,                // **变更**: 16→20(按钮间距≥20)
+    MODAL_BUTTON_GAP: 30,          // **新增**: 弹窗按钮间距
     FAB_DIAMETER: 56,
     MODAL_RADIUS: 24,
-    // **变更**: 卡牌圆角增大,对标参考图扁平化白底风格
-    CARD_RADIUS: 14,               // 卡牌圆角
+    CARD_RADIUS: 16,               // **变更**: 14→16(规范要求卡片圆角16)
     PILL_RADIUS: 18,
-    CELL_RADIUS: 12,               // 宝物格圆角
+    CELL_RADIUS: 16,               // **变更**: 12→16(与卡片一致)
     BACKPACK_RADIUS: 20,           // 背包圆角(规范 §12)
 
     // === 卡片 ===
     CARD_SIZE: 88,                 // 宝物卡片边长(规范 §11)
     CARD_GAP: 12,                  // 卡片间距
     PILL_GAP: 12,
-    BUTTON_GAP: 16,
     BACKPACK_HEIGHT: 96,           // 背包区域高度(规范 §12)
-    // === 麻將卡牌专属样式(对标参考图:白底+细绿边+底部立体阴影+黑白线条图案)===
+    BACKPACK_CONTAINER_RADIUS: 20, // **新增**: 背包容器圆角
+
+    // === 麻將卡牌专属样式(对标参考图:白底+细绿边+底部立体阴影)===
     MAHJONG_BG: '#FFFFFF',          // 麻將卡牌底色(纯白)
     MAHJONG_BORDER_GREEN: '#5BC25B', // 麻將卡牌细绿边
     MAHJONG_BORDER_GREEN_BOTTOM: 'rgba(91,194,91,0.45)', // 底层淡绿边
     MAHJONG_BORDER_WIDTH: 1.5,       // 顶层细绿边线宽
     MAHJONG_BORDER_WIDTH_BOTTOM: 1,   // 底层更细绿边线宽
     MAHJONG_TOP_ALPHA: 1.0,          // 顶层 100% 实色
-    MAHJONG_BOTTOM_ALPHA: 0.45,      // 被压下层透明度(变浅发灰)
-    // **变更**: 底部立体阴影加厚(对标参考图)
+    MAHJONG_BOTTOM_ALPHA: 0.70,      // **变更**: 0.45→0.70(不可点击降亮30%,规范要求)
+
+    // **变更**: 底部立体阴影加厚
     MAHJONG_SHADOW_TOP: {
         color: 'rgba(0,0,0,0.30)',
         blur: 10,
@@ -68,11 +80,10 @@ var constants = {
         blur: 4,
         offsetY: 3
     },
-    // 黑白线条图案颜色
     MAHJONG_ICON_COLOR: '#2A2A2A',
 
     // === 动画时长(ms)===
-    ANIM_FAST: 100,                // 点击反馈(规范 §9)
+    ANIM_FAST: 120,                // **变更**: 100→120(规范点击反馈120ms)
     ANIM_NORMAL: 200,
     ANIM_SLOW: 300,
     ANIM_MODAL: 400,
@@ -80,10 +91,18 @@ var constants = {
     ANIM_MATCH: 200,               // 三消(规范 §13)
     ANIM_VICTORY: 800,             // 通关(规范 §13)
     ANIM_FAIL: 300,                // 失败(规范 §13)
+    ANIM_UNLOCK_FLASH: 150,        // **新增**: 解锁闪烁反馈 150ms
+    ANIM_FAIL_SHAKE_MS: 300,       // **新增**: 失败震屏 300ms
+    ANIM_BACKPACK_FLASH_MS: 400,   // **新增**: 背包满闪烁周期
+    ANIM_PILE_FADE_IN: 100,        // **新增**: 卡堆顶牌淡入 100ms
+    ANIM_HOVER_LIFT_PX: 2,         // **新增**: 可点击卡片悬浮上浮 2px
     HINT_FLASH: 2000,
 
+    // === 缓动函数名(用于动画模块)===
+    EASE_OUT_QUAD: 'easeOutQuad',  // **新增**: 飞入背包缓动
+
     // === 层叠布局(规范 GAME_DESIGN §7 V2)===
-    // 透明度递减规则(规范 §7.3)
+    // 透明度递减规则(规范 §7.3) - 按 layer 区分
     LAYER_ALPHA: {
         1: 1.00,   // 顶层 100%
         2: 0.85,   // 第二层 85%
@@ -91,25 +110,17 @@ var constants = {
         4: 0.55    // 第四层及以下 55%(规范 V2)
     },
     LAYER_ALPHA_MIN: 0.55,
-    // 视觉偏移(每层 X/Y 偏移像素,规范 §7.5:6~12px)
     LAYER_OFFSET_X: 10,
     LAYER_OFFSET_Y: 10,
-    // 遮挡阈值(规范 §7.5 V2:上层覆盖下层面积 ≥ 25% 不可点击)
     CLICK_BLOCK_RATIO: 0.25,
-    // 完全遮挡阈值(被覆盖 ≥ 90% 时隐藏,但数据保留)
     HIDDEN_OVERLAP_RATIO: 0.90,
-    // 卡堆占比 10~30%(规范 §7.8 / §7.10)
     PILE_RATIO_MIN: 0.10,
     PILE_RATIO_MAX: 0.30,
 
     // === 层叠卡片视觉(GAME_DESIGN §7)===
-    // 顶层强阴影(悬浮感)
     TOP_CARD_SHADOW: { color: 'rgba(0,0,0,0.25)', blur: 12, offsetY: 6 },
-    // 顶层高光 alpha
     TOP_CARD_HIGHLIGHT: 0.40,
-    // 卡堆 edge 层数(规范 §7.8:卡堆 5~20 张,edge 可见 5~6 层)
     PILE_EDGE_LAYERS: 5,
-    // 卡堆 edge 颜色(从里到外渐深)
     PILE_EDGE_COLORS: [
         'rgba(140,100,70,0.85)',
         'rgba(125,90,60,0.75)',
@@ -117,34 +128,53 @@ var constants = {
         'rgba(95,70,45,0.55)',
         'rgba(80,55,35,0.45)'
     ],
-    // 飞入动画旋转(0~360°)
     FLY_ROTATION_DEG: 360,
+    // **新增**: 可点击卡片高亮描边色 + 描边宽度
+    CLICKABLE_BORDER_COLOR: '#F5B942',   // 寻宝金
+    CLICKABLE_BORDER_WIDTH: 2.5,         // 高亮描边宽度
+    CLICKABLE_GLOW_ALPHA: 0.35,          // 高亮光晕透明度
+    // **新增**: 不可点击降亮参数(规范:降低亮度30%)
+    DIM_ALPHA: 0.70,
 
     // === 品牌色(规范 UI_ART_STANDARDS §4)===
     COLORS: {
-        // 主色
         BRAND: '#F5B942',          // 寻宝金(主按钮/重点信息/奖励)
         BRAND_DARK: '#D89A2A',
-        // 辅助色
         BLUE: '#5AA9FF',           // 宝石蓝(关卡信息/辅助按钮)
         BLUE_DARK: '#3D8FDC',
-        // 成功色
-        SUCCESS: '#42C96F',
+        SUCCESS: '#42C96F',        // 成功绿(三消/胜利)
         SUCCESS_DARK: '#2DA856',
-        // 失败色
-        DANGER: '#FF6B6B',
+        DANGER: '#FF6B6B',         // 失败红(危险提示/失败弹窗)
         DANGER_DARK: '#E04F4F',
-        // 中性
         WHITE: '#FFFFFF',
         TEXT_TITLE: '#333333',     // 标题
         TEXT_BODY: '#555555',      // 正文
         TEXT_HINT: '#888888',      // 辅助说明
         BG_TOP: '#FFF7E7',         // 页面背景顶
         BG_BOTTOM: '#FCEBC5',      // 页面背景底
+        BG_TEXTURE: 'rgba(220,180,120,0.10)', // **新增**: 低透明度藏宝图纹理
         SHADOW: 'rgba(0,0,0,0.15)',// 阴影色(规范 §11)
         MODAL_MASK: 'rgba(50,40,20,0.45)',
+        MODAL_WIN_GRADIENT_TOP: '#42C96F',   // **新增**: 胜利弹窗主色(成功绿)
+        MODAL_WIN_GRADIENT_MID: '#7FE5A0',
+        MODAL_WIN_GRADIENT_BOTTOM: '#2DA856',
+        MODAL_FAIL_GRADIENT_TOP: '#FF6B6B',  // **新增**: 失败弹窗主色(失败红)
+        MODAL_FAIL_GRADIENT_MID: '#FFB0B0',
+        MODAL_FAIL_GRADIENT_BOTTOM: '#E04F4F',
+        MODAL_BTN_TEXT: '#FFFFFF',
+        BACKPACK_BG: '#FFFFFF',
         BUTTON_DISABLED: '#D4C8B8',
-        BUTTON_DISABLED_TEXT: '#A89882'
+        BUTTON_DISABLED_TEXT: '#A89882',
+        CARD_STROKE: '#333333',    // **新增**: 数字描边色(1px 提升辨识度)
+        // 顶部信息区色
+        NAV_LEVEL_TEXT: '#333333', // 数字主色
+        NAV_LEVEL_SUBTEXT: '#888888', // 辅助色
+        // 按钮规格色
+        BTN_PRIMARY_BG: '#F5B942',
+        BTN_PRIMARY_TEXT: '#FFFFFF',
+        BTN_SECONDARY_BG: '#FFFFFF',
+        BTN_SECONDARY_TEXT: '#5AA9FF',
+        BTN_SECONDARY_STROKE: '#5AA9FF'
     },
 
     // === 阴影(规范 §11:0 4 8)===
@@ -152,12 +182,16 @@ var constants = {
     SHADOW_BUTTON: { color: 'rgba(0,0,0,0.18)', blur: 8,  offsetY: 4 },
     SHADOW_FAB:    { color: 'rgba(0,0,0,0.15)', blur: 8,  offsetY: 2 },
     SHADOW_MODAL:  { color: 'rgba(0,0,0,0.25)', blur: 16, offsetY: 8 },
+    SHADOW_NAV:    { color: 'rgba(0,0,0,0.08)', blur: 4,  offsetY: 2 }, // **新增**: 顶部信息区阴影
+    SHADOW_BACKPACK_CONTAINER: { color: 'rgba(0,0,0,0.12)', blur: 6, offsetY: 3 }, // **新增**
 
     // === 字号(规范 §5)===
     FONT_SIZE_TITLE: 40,            // 页面标题
     FONT_SIZE_SECTION: 28,         // 区域标题
     FONT_SIZE_BODY: 22,            // 普通文字
     FONT_SIZE_HINT: 18,            // 辅助说明
+    FONT_SIZE_NAV_VALUE: 28,       // **新增**: 顶部信息区数字
+    FONT_SIZE_NAV_LABEL: 14,       // **新增**: 顶部信息区标签
 
     // === 宝物(规范 §3:10 种;现有 15 种扩展)===
     TREASURE_NONE: 0,
@@ -174,6 +208,8 @@ var constants = {
     MAX_BURST_PARTICLES: 20,
     MAX_FLY_PARTICLES: 12,
     MAX_ANIMATIONS: 50,
+    MAX_VICTORY_PARTICLES: 50,    // **新增**: 胜利彩带/金币/星星粒子上限
+    MAX_MATCH_PARTICLES: 12,      // **新增**: 三消绿色粒子上限
 
     // === 触摸 ===
     TOUCH_THROTTLE_MS: 50,          // 50ms 节流(规范 §11)
@@ -188,7 +224,30 @@ var constants = {
     // === 弹窗枚举 ===
     MODAL_NONE: null,
     MODAL_WIN: 'win',
-    MODAL_FAIL: 'fail'
+    MODAL_FAIL: 'fail',
+
+    // === 顶层信息区三栏(规范 §9)===
+    NAV_SECTION_GAP: 16,           // **新增**: 三栏间距
+    NAV_VALUE_GAP: 4,              // **新增**: 数字与标签间距
+
+    // === 弹窗相关(规范 §14)===
+    MODAL_WIDTH_WIN: 480,           // 胜利弹窗宽
+    MODAL_HEIGHT_WIN: 400,
+    MODAL_WIDTH_FAIL: 420,          // 失败弹窗宽
+    MODAL_HEIGHT_FAIL: 360,
+    MODAL_HEADER_HEIGHT: 110,
+    MODAL_HEADER_HEIGHT_FAIL: 90,
+    MODAL_BTN_HEIGHT: 64,           // 弹窗按钮高(规范按钮规格)
+    MODAL_BTN_WIDTH: 180,           // 弹窗按钮宽(2 按钮 + 间距后适配 480 宽)
+    MODAL_BTN_FONT: 'bold 28px sans-serif',  // 规范文字 28px bold
+
+    // === 背景纹理(藏宝图)===
+    BG_TEXTURE_PATTERN_SIZE: 64,   // **新增**: 纹理图块大小
+    BG_TEXTURE_LINE_COLOR: 'rgba(200,160,100,0.12)', // **新增**: 纹理线条色
+    BG_TEXTURE_DOT_COLOR: 'rgba(180,140,80,0.10)',    // **新增**: 纹理点缀色
+
+    // === 隐藏升级字段(寻宝金纹理)===
+    NAV_GOLD_TINT: 'rgba(245,185,66,0.10)' // **新增**: 顶部信息区轻微金币纹理背景
 };
 
 // 兼容旧字段引用(灰度迁移)
